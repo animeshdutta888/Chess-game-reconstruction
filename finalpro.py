@@ -11,21 +11,17 @@ import scipy.cluster as clstr
 import collections
 from time import time
 from collections import defaultdict
-
+from scipy.ndimage import imread
 from functools import partial
 from sklearn.utils import shuffle
-import os, glob, skimage, shutil
+import os, glob,  shutil
 import cv2 as cv2
 from skimage.transform import resize
 from scipy.stats import wasserstein_distance
-import warnings
 from skimage.measure import compare_ssim
 import imutils
-import collections
 from skimage.transform import resize
 from scipy.stats import wasserstein_distance
-from scipy.misc import imsave
-from scipy.ndimage import imread
 import warnings
 import re
 
@@ -38,7 +34,6 @@ def FrameCapture(path):
     while success: 
 
         success, image = vidObj.read() 
-        path = 'home/tcs/Downloads/finalproject/cap/'
 
         cv2.imwrite("game/frame%d.jpg" % count, image) 
 
@@ -276,7 +271,6 @@ def labelsquare(bm):
 # In[8]:
 
 
-
 warnings.filterwarnings('ignore')
 height = 2**10
 width = 2**10
@@ -331,7 +325,7 @@ def check(img_a):
       return(k) 
 
 
-# In[13]:
+# In[10]:
 
 
 count1=1
@@ -342,8 +336,6 @@ s=''
 co=0
 lo=[]
 li=[]
-if not os.path.exists('game1'):
-        os.makedirs('game1')
 for i in range(len(c2)-1):
     bn=''
     su=0
@@ -410,12 +402,15 @@ for i in range(len(c2)-1):
                 b=dict2.get(str(lok2[0])).tolist()
                 xn=str(lok2[0])
                 xm=str(lok1[0])
+                print(lok1,lok2)
+                
+
             else:
                 a=dict1.get(str(lok2[0])).tolist()
                 b=dict2.get(str(lok1[0])).tolist()
                 xn=str(lok1[0])
                 xm=str(lok2[0])
-
+                print(lok2,lok1)
 
             x1=int(a[0])
             y1=int(a[1])
@@ -423,6 +418,8 @@ for i in range(len(c2)-1):
             y2=int(b[1])
             w=54
             h=54
+            if not os.path.exists('game1'):
+                os.makedirs('game1')
             crop_img1 = image1[y1:y1+h, x1:x1+w]
             crop_img2 = image1[y2:y2+h, x2:x2+w]
             cv2.imwrite("game1/dd%d.jpg" %count1,crop_img1)
@@ -450,26 +447,34 @@ for i in range(len(c2)-1):
             if(su==2 or su==3):
                 if(x2=='temp1/blank1.jpg'):
                     s=bn+xn
-
+                    print(bn+xn)
                 elif((x1=='temp1/bpawn.jpg'or x1=='temp1/wpawn.jpg') and x2!='temp1/blank1.jpg'):
-
+                    print(xm[0]+"x"+xn)
                     s=xm[0]+"x"+xn
                 elif(x2!='temp1/blank1.jpg'and (x1!='temp1/wpawn.jpg'or x1!='temp1/bpawn.jpg')):
                     s=bn+"x"+xn
-
+                    print(bn+"x"+xn)
                 li.append(s)
         if(su==4):
             count1=count1+1
+            print("0-0")
             li.append("0-0")
         
         if(su>4):
             count1=count1+1
+            print("0-0-0")
             li.append("0-0-0")
          
     
 
 
-# In[14]:
+# In[ ]:
+
+
+
+
+
+# In[11]:
 
 
 k=0
@@ -484,7 +489,7 @@ for i in range(len(li)):
             text_file.write(li[i]+' '+'\n'+'\n')
 
 
-# In[15]:
+# In[12]:
 
 
 lo1=[]
@@ -506,7 +511,7 @@ for i in range (len(lo)-1):
 lo1.append(lo[-1:])
 
 
-# In[19]:
+# In[13]:
 
 
 li1=[]
@@ -518,7 +523,13 @@ for j in lo1:
     li1.append(j1)
 
 
-# In[23]:
+# In[ ]:
+
+
+
+
+
+# In[14]:
 
 
 
@@ -543,16 +554,14 @@ for filename in files:
     statinfo=os.stat(st)
     if(statinfo.st_size>0):
         img = cv2.imread('game/'+filename)
-        cv2.rectangle(img,(500,10),(1200,500),(255,100,0),3)
+        cv2.rectangle(img,(500,10),(1200,700),(0,255,0),3)
 
         height, width = img.shape[:2]
         for j in li1:
-            cv2.putText(img,'Moves :',(505,50),font,font_scale,color,thickness)
             if(filename==j):
                 x=500
                 y=100
                 k=li[c]
-
                 c=c+1
                 p.append(k)
                 for j2 in p:
@@ -578,16 +587,126 @@ for i in range(len(img_array)):
     out.write(img_array[i])
 out.release()
 
+
+# In[15]:
+
+
+def check1(img):
+    bn=0
+    img_rgb6 = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
+    img_gray = cv2.cvtColor(img_rgb6,cv2.COLOR_BGR2GRAY)
+    king_white_template = cv2.imread("temp1/wking.jpg",0)    
+    w_king_white, h_king_white = king_white_template.shape[::-1]
+    res_king_white = cv2.matchTemplate(img_gray,king_white_template,cv2.TM_CCOEFF_NORMED)
+    threshhold = 0.6
+    loc = np.where(res_king_white >= threshhold)
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    font_scale = 0.45
+    thickness = 1
+    color = (0, 0, 169)
+    ll=[]
+    k=[]
+    for pt in zip(*loc[::-1]):
+        ll.append(pt)
+
+    x1=0
+    x2=0
+    for i in ll :
+        x=0
+        j=list(i)
+        ll1=tuple(j)
+        k1=abs(j[0]-x1)
+        k2=abs(j[1]-x2)
+
+        k=k1+k2
+        if(k>4):
+            p1=ll1[0]
+            p2=ll1[1]
+        x1=j[0]
+        x2=j[1]
+    lk1=[]
+    min1=10
+    for i in range(8):
+                for j in range(8):
+                        z=0
+                        bm1=centroids(img)
+                        z1=abs(bm1[i][j][0]-p1)
+                        z2=abs(bm1[i][j][1]-p2)
+                        z=z1+z2
+                        if(z<min1):
+                            min1=z
+                            m1=bm1[i][j][0]
+                            m2=bm1[i][j][1]
+
+    lk1.extend((m1,m2))
+    dict1=labelsquare(bm1)
+    lok1 = [key  for (key, value) in dict1.items() if  list(lk1)==list(value)]
+    s=str(lok1[0])
+    k=int(s[1])-1
+    cou=0
+    for i in range(k,0,-1):
+        if(i<k):
+            x=str(s[0]+str(i))
+            h=54
+            w=54
+            x1=dict1.get(x).tolist()
+            z1=int(x1[0])
+            z2=int(x1[1])
+            crop_img1 = img[z2:z2+h, z1:z1+w]
+            cv2.imwrite("ga/dd%d.jpg"%cou ,crop_img1)
+            sk="ga/dd%d.jpg"%cou
+            xk=check(sk)
+            if(xk!='temp1/blank1.jpg'):
+                if(xk=='temp1/wrook.jpg' or xk=='temp1/wqueen.jpg'):
+                    bn=1
+                    break
+            cou=cou+1
+    for j in range(k,9):
+        if(i>k):
+            x=str(s[0]+str(i))
+            h=54
+            w=54
+            x1=dict1.get(x).tolist()
+            z1=int(x1[0])
+            z2=int(x1[1])
+            crop_img1 = img[z2:z2+h, z1:z1+w]
+            cv2.imwrite("ga/dd%d.jpg"%cou ,crop_img1)
+            sk="ga/dd%d.jpg"%cou
+            xk=check(sk)
+            if(xk!='temp1/blank1.jpg'):
+                if(xk=='temp1/wrook.jpg' or xk=='temp1/wqueen.jpg'):
+                    bn=1
+                    break
+            cou=cou+1
+    
+    return(bn)  
+                                           
+    
+                                     
+
+
+
+
+
+# In[21]:
+
+
+import os
+import sys
 import shutil
-mydir= "crop"
-mydir1= "game"
-mydir2="game1"
 try:
-    shutil.rmtree(mydir)
-    shutil.rmtree(mydir1)
-    shutil.rmtree(mydir2)
+    shutil.rmtree("game")
+    shutil.rmtree("game1")
+    shutil.rmtree("crop")
+
 except OSError as e:
     print ("Error: %s - %s." % (e.filename, e.strerror))
+
+
+# In[ ]:
+
+
+
 
 
 # In[ ]:
